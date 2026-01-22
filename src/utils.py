@@ -33,7 +33,6 @@ def create_database(database_name: str, params: dict):
                     vacancy_id INT PRIMARY KEY,
                     name VARCHAR(255) NOT NULL,
                     employer_id INT NOT NULL,
-                    employer_name VARCHAR(50)  NOT NULL,
                     url TEXT NOT NULL,
                     salary_from INT NOT NULL,
                     salary_to INT NOT NULL,
@@ -73,15 +72,15 @@ def save_data_to_database(data: list[dict[str, Any]], database_name: str, params
             for vacancy in emp_vacancies:
                 vacancy_id = vacancy["vac_id"]
                 name = vacancy["name"]
-                employer_name = vacancy["employer"]
+                employer_id = vacancy["employer_id"]
                 url = vacancy["url"]
                 salary_from = vacancy["salary_from"]
                 salary_to = vacancy["salary_to"]
                 salary_currency = vacancy["salary_currency"]
                 requirement = vacancy["requirement"]
                 cur.execute("""
-                INSERT INTO vacancies (vacancy_id, name, employer_name, employer_id, url, salary_from, salary_to, salary_currency, requirement)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", (vacancy_id, name, employer_name, employer_id, url, salary_from, salary_to, salary_currency, requirement))
+                INSERT INTO vacancies (vacancy_id, name, employer_id, url, salary_from, salary_to, salary_currency, requirement)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", (vacancy_id, name, employer_id, url, salary_from, salary_to, salary_currency, requirement))
 
     conn.commit()
     conn.close()

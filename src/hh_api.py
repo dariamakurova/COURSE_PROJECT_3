@@ -81,7 +81,6 @@ class HeadHunterAPI(VacanciesAPI):
         return {
             "vac_id": vacancy.get("id"),
             "name": vacancy.get("name"),
-            "employer": vacancy.get("employer", {}).get("name"),
             "employer_id": vacancy.get("employer", {}).get("id"),
             "url": vacancy.get("alternate_url"),
             "salary_from": salary_from,
