@@ -23,3 +23,64 @@ class DBManager():
                 return cur.fetchall()
         finally:
             conn.close()
+
+    def get_all_vacancies(self):
+        """Метод для получения списка всех вакансий с указанием названия компании,
+        названия вакансии, зарплаты и ссылки на вакансию"""
+
+        conn = psycopg2.connect(dbname=self.__db_name, **self.__params)
+
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                SELECT e.name, v.name, v.salary_from, v.salary_to, v.salary_currency, v.url
+                FROM employers AS e
+                JOIN vacancies AS v USING(employer_id)
+                ORDER BY e.name""")
+                return cur.fetchall()
+        finally:
+            conn.close()
+
+    def get_avg_salary(self):
+        """Метод для получения средней зарплаты по вакансиям"""
+
+        conn = psycopg2.connect(dbname=self.__db_name, **self.__params)
+
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                SELECT AVG(v.salary_to) AS avg_salary
+                FROM vacancies AS v""")
+                return cur.fetchall()
+        finally:
+            conn.close()
+
+    def get_vacancies_higher_than_avg(self):
+        """Метод для получения списка всех вакансий, у которых зарплата выше средней по всем вакансиям"""
+
+        conn = psycopg2.connect(dbname=self.__db_name, **self.__params)
+
+        try:
+            with conn.cursor() as cur:
+                cur.execute("""
+                SELECT * 
+                FROM vacancies AS v
+                WHERE salary_to > (SELECT AVG(salary_to) FROM vacancies)""")
+                return cur.fetchall()
+        finally:
+            conn.close()
+
+    def get_vacancies_by_keyword(self, keyword):
+        """Метод для получения списка всех вакансий, в названии которых содержатся переданные в метод слова"""
+
+        conn = psycopg2.connect(dbname=self.__db_name, **self.__params)
+
+        try:
+            with conn.cursor() as cur:
+                cur.execute(f"""
+                SELECT * 
+                FROM vacancies AS v
+                WHERE v.name ILIKE '%{keyword}%'""")
+                return cur.fetchall()
+        finally:
+            conn.close()
