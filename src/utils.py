@@ -6,10 +6,10 @@ from src.hh_api import HeadHunterAPI
 from src.hh_employer_api import HeadHunterEmployerAPI
 
 
-def create_database(database_name: str, params: dict):
+def create_database(database_name: str, params: dict) -> None:
     """Создание базы данных и таблиц для сохранения данных о работодателях и вакансиях"""
 
-    conn = psycopg2.connect(dbname='postgres', **params)
+    conn = psycopg2.connect(dbname="postgres", **params)
     conn.autocommit = True
     with conn.cursor() as cur:
         cur.execute(f"DROP DATABASE IF EXISTS {database_name}")
@@ -38,7 +38,6 @@ def create_database(database_name: str, params: dict):
                     salary_to INT NOT NULL,
                     salary_currency VARCHAR(10) NOT NULL,
                     requirement TEXT,
-                    
                     CONSTRAINT fk_vacancies_employer_id FOREIGN KEY (employer_id) REFERENCES employers(employer_id)
                 )
             """)
@@ -46,7 +45,8 @@ def create_database(database_name: str, params: dict):
     conn.commit()
     conn.close()
 
-def get_employer_with_vacancies(employer_id: str) -> dict:
+
+def get_employer_with_vacancies(employer_id: int) -> dict:
     """Формирование словаря с данными о компании и ее вакансиях по id"""
 
     data = HeadHunterEmployerAPI().get_employer_info(employer_id)
@@ -56,7 +56,7 @@ def get_employer_with_vacancies(employer_id: str) -> dict:
     return data
 
 
-def save_data_to_database(data: list[dict[str, Any]], database_name: str, params: dict):
+def save_data_to_database(data: list[dict[str, Any]], database_name: str, params: dict) -> None:
     """Сохранение данных о работодателях и компаниях в базу данных."""
 
     conn = psycopg2.connect(dbname=database_name, **params)
@@ -65,9 +65,12 @@ def save_data_to_database(data: list[dict[str, Any]], database_name: str, params
         for employer in data:
             employer_id = employer["employer_id"]
             employer_name = employer["employer_name"]
-            cur.execute("""
+            cur.execute(
+                """
             INSERT INTO employers (employer_id, name)
-            VALUES (%s, %s)""", (employer_id, employer_name))
+            VALUES (%s, %s)""",
+                (employer_id, employer_name),
+            )
             emp_vacancies = employer["vacancies"]
             for vacancy in emp_vacancies:
                 vacancy_id = vacancy["vac_id"]
@@ -78,9 +81,13 @@ def save_data_to_database(data: list[dict[str, Any]], database_name: str, params
                 salary_to = vacancy["salary_to"]
                 salary_currency = vacancy["salary_currency"]
                 requirement = vacancy["requirement"]
-                cur.execute("""
-                INSERT INTO vacancies (vacancy_id, name, employer_id, url, salary_from, salary_to, salary_currency, requirement)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", (vacancy_id, name, employer_id, url, salary_from, salary_to, salary_currency, requirement))
+                cur.execute(
+                    """
+                INSERT INTO vacancies (vacancy_id, name, employer_id, url, salary_from, salary_to,
+                salary_currency, requirement)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (vacancy_id, name, employer_id, url, salary_from, salary_to, salary_currency, requirement),
+                )
 
     conn.commit()
     conn.close()

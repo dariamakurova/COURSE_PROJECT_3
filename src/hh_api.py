@@ -1,3 +1,4 @@
+from typing import Any
 
 import requests
 
@@ -7,13 +8,13 @@ from src.vacancies_api import VacanciesAPI
 class HeadHunterAPI(VacanciesAPI):
     """Класс для получения вакансий с платформы HeadHunter"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__url = "https://api.hh.ru/vacancies"
         self.__headers = {"User-Agent": "HH-User-Agent"}
         self.__params = {"text": "", "page": 0, "per_page": 100, "only_with_salary": True, "employer_id": ""}
         self.__vacancies = []
 
-    def __connect(self, employer_id: str, page: int):
+    def __connect(self, employer_id: int, page: int) -> Any:
         """Метод для подключения к сервису HH по API"""
         self.__params["employer_id"] = employer_id
         self.__params["page"] = page
@@ -21,7 +22,7 @@ class HeadHunterAPI(VacanciesAPI):
         response.raise_for_status()
         return response.json()
 
-    def get_vacancies(self, employer: str):
+    def get_vacancies(self, employer: int) -> Any:
         """Метод для получения вакансий с HH"""
         page = 0
         data = self.__connect(employer, page)
@@ -38,7 +39,7 @@ class HeadHunterAPI(VacanciesAPI):
         return self.__vacancies
 
     @classmethod
-    def simplify_vacancy(cls, vacancy: dict):
+    def simplify_vacancy(cls, vacancy: dict) -> dict:
         """Оставляет только рабочие параметры вакансии"""
 
         rur_currencies = {"RUR": "RUR", "RUB": "RUR", "РУБ": "RUR", "РУБ.": "RUR"}
@@ -88,10 +89,3 @@ class HeadHunterAPI(VacanciesAPI):
             "salary_currency": salary_currency,
             "requirement": vacancy.get("snippet", {}).get("requirement"),
         }
-
-    @classmethod
-    def validate_salary(cls, salary: dict):
-        """Приводит зарплату к рабочему формату"""
-
-
-
